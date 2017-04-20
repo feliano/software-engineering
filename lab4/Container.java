@@ -36,9 +36,9 @@ class Container extends Component implements Iterable<Component> {
 
 	@Override
 	public String toString(){
-		String output = mName + " " + getWeight() + "\n";
+		String output = mName + " " + getWeight();
 		for(Component item : children){
-			output += item + "\n";
+			output += "\n" + item;
 		}
 		return output;
 	}
@@ -60,72 +60,84 @@ class Container extends Component implements Iterable<Component> {
 		private ArrayList<Component> nodes = new ArrayList<Component>(); // used for BFS
 		private Deque<Component> stack = new ArrayDeque<Component>(); // used for DFS
 		private int index = 0;
+		private boolean useBFS = false;
 
 		public CompositeIterator(){
 			// set up iterator nodes
 			/* BFS */
-			nodes.add(getOuterObject());
-			for(Component c : children){
-				nodes.add(c);
+			if(useBFS){
+				nodes.add(getOuterObject());
+				for(Component c : children){
+					nodes.add(c);
+				}				
+			}else{
+				/* DFS */
+				stack.push(getOuterObject());				
 			}
 
-			/* DFS */
-			stack.push(getOuterObject());
 
 		}
 
 	    public Component next(){
 
-	    	/* DFS */
-	    	if(stack.isEmpty()) return null;
-	    	Component curr = stack.pop();
-	    	Component child = curr.getChild(0);
-			// try to add children of current node
-		    int i = 0;
-		    Component c = curr.getChild(i++);
-		    while(c != null){
-		    	stack.push(c);
-		    	c = curr.getChild(i++);
-		    }	
-		    //System.out.println(curr.mName);		    
-
-		    return curr;
-
 	    	/* BFS */
-	    	/*
-		    //System.out.println(nodes.get(index).mName);		    
-			if(index != 0){
-				Component current = nodes.get(index);
+	    	if(useBFS){
+			    System.out.println(nodes.get(index).mName);		    
+				if(index != 0){
+					Component current = nodes.get(index);
+					// try to add children of current node
+				    int i = 0;
+				    Component c = current.getChild(i++);
+				    while(c != null){
+				    	nodes.add(c);
+				    	c = current.getChild(i++);
+				    }				
+				}
+
+			    return nodes.get(index++);	    		
+	    	}else{
+
+		    	/* DFS */
+		    	if(stack.isEmpty()) return null;
+		    	Component curr = stack.pop();
+		    	Component child = curr.getChild(0);
 				// try to add children of current node
 			    int i = 0;
-			    Component c = current.getChild(i++);
+			    Component c = curr.getChild(i++);
 			    while(c != null){
-			    	nodes.add(c);
-			    	c = current.getChild(i++);
-			    }				
-			}
+			    	stack.push(c);
+			    	c = curr.getChild(i++);
+			    }	
+			    System.out.println(curr.mName);		    
 
-		    return nodes.get(index++);
-	    	*/
+			    return curr;
+	    		
+	    	}
+
 	    }   
 	    
 	    public boolean hasNext(){
 		    // returns true if more components to visit
-	    	/*DFS*/
-	    	if(stack.isEmpty()){
-		    	return false;    		
+	    	if(useBFS){
+
+		    	/*BFS*/
+		    	if(index < nodes.size()){
+			    	return true;    		
+		    	}else{
+		    		return false;
+		    	}
+
 	    	}else{
-	    		return true;
+
+		    	/*DFS*/
+		    	if(stack.isEmpty()){
+			    	return false;    		
+		    	}else{
+		    		return true;
+		    	}	    		
 	    	}
 
-	    	/*BFS*/
-	    	/*
-	    	if(index < nodes.size()){
-		    	return true;    		
-	    	}else{
-	    		return false;
-	    	}
-			*/
+			
 	    }
 
 	    public void remove(){
@@ -163,27 +175,27 @@ class Container extends Component implements Iterable<Component> {
 		shavekit.add(new Item("Shaving Foam",0.2));
 		necessaire.add(shavekit);
 
-		//System.out.println(suitcase);
-		//System.out.println(necessaire);
-
 		Component child = suitcase.getChild(4);
 		//System.out.println(child);
 
 		// removing the shave kit and the shirt
 		suitcase.remove(shavekit);
 
-		//System.out.println(suitcase);
+		System.out.println(suitcase);
 
 		Iterator it = suitcase.iterator();
-		
-		System.out.println("For Each loop");
+
+		System.out.println("\nFor Each loop");
 		for(Component c : suitcase){
-			System.out.println(c);
+			//System.out.println(c);
+
 		}
 		
 		System.out.println("\nExplicit Iterator method calls");		
 		while(it.hasNext()){
-			System.out.println(it.next());		
+			it.next();
+			//System.out.println(it.next());		
 		}
+		
 	}
 }
