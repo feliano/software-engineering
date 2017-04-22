@@ -170,13 +170,12 @@ class Container extends Component implements Iterable<Component> {
 		suitcase.add(new Item("Pants",0.3));
 
 		// packing a shavekit
-		Container shavekit = new Container("Shavekit",0.18);
+		Container shavekit = new Container("Shave Kit",0.18);
 		shavekit.add(new Item("Razor",0.1));
 		shavekit.add(new Item("Shaving Foam",0.2));
 		necessaire.add(shavekit);
 
 		Component child = suitcase.getChild(4);
-		//System.out.println(child);
 
 		// removing the shave kit and the shirt
 		suitcase.remove(shavekit);
@@ -187,8 +186,7 @@ class Container extends Component implements Iterable<Component> {
 
 		System.out.println("\nFor Each loop");
 		for(Component c : suitcase){
-			//System.out.println(c);
-
+			
 		}
 		
 		System.out.println("\nExplicit Iterator method calls");		
