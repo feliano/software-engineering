@@ -13,6 +13,7 @@ class TreeFrame extends JFrame implements ActionListener {
     static final String showString = " Show Details ";
 
     TreeFrame() {
+	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	Container c = getContentPane();
 
 	// initTree() should create root, treeModel and tree.
