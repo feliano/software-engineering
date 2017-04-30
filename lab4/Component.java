@@ -1,3 +1,4 @@
+// Fredrik Eliasson
 /** Component class */
 abstract class Component {
 
