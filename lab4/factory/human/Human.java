@@ -1,3 +1,4 @@
+// Fredrik Eliasson
 package human;
 
 public abstract class Human {
@@ -12,7 +13,9 @@ public abstract class Human {
 		
 		// in this lab it's okay to assume that input is correct format
 		int genderDigit = Integer.parseInt(pnr.split("-")[1].split("")[2]);
-		if(genderDigit%2 == 0){
+		if(genderDigit == 0){
+			return new NonBinary(name,pnr);
+		}else if(genderDigit%2 == 0){
 			return new Woman(name,pnr);
 		}else{
 			return new Man(name,pnr);
