@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.event.*;
 import javax.swing.table.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -8,12 +9,15 @@ import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 
 
 class Window extends JFrame{
@@ -30,10 +34,11 @@ class Window extends JFrame{
 	ArrayList<String> titles = new ArrayList<>();
 
 	public Window(){
+		setTitle("Browser");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLayout(new BorderLayout());
 		setVisible(true);
-		setSize(500,500);
+		setSize(800,800);
 
 		addressField = new JTextField("http://www.nada.kth.se/~henrik");
 		addressField.addActionListener(event -> {
@@ -42,13 +47,9 @@ class Window extends JFrame{
             try{
                 webReader.setPage(new URL(address));
 				updateLinks(address);
-            }catch (MalformedURLException e1){
-                e1.printStackTrace();
-            }catch (IOException e2) {
-                e2.printStackTrace();
-            } catch (BadLocationException e3) {
-				e3.printStackTrace();
-			}
+            } catch (IOException | BadLocationException e) {
+                e.printStackTrace();
+            }
 		});
 		getContentPane().add(addressField,BorderLayout.NORTH);
 
@@ -57,15 +58,41 @@ class Window extends JFrame{
 		getContentPane().add(readerScrollPane,BorderLayout.CENTER);
 
 		linksTable = new JTable(TABLE_MAX_ROWS,TABLE_NUM_COLUMNS);
-		JTableHeader header = linksTable.getTableHeader();
-		TableColumnModel tableColumnModel = header.getColumnModel();
 
-		TableColumn tableColumnOne = tableColumnModel.getColumn(0);
-		tableColumnOne.setHeaderValue("Web Address");
-		TableColumn tableColumnTwo = tableColumnModel.getColumn(1);
-		tableColumnTwo.setHeaderValue("About");
-		//header.repaint();
+		String[] header = {"Web Adress","About"};
+		String[][] data = {};
+		DefaultTableModel defaultTableModel = new DefaultTableModel(data,header) {
+			@Override
+			public boolean isCellEditable(int i, int i1) {
+				return false;
+			}
+		};
+		defaultTableModel.setRowCount(TABLE_MAX_ROWS);
+		defaultTableModel.setColumnCount(TABLE_NUM_COLUMNS);
 
+		linksTable.addMouseListener(new MouseAdapter() {
+										@Override
+										public void mousePressed(MouseEvent mouseEvent) {
+											if(mouseEvent.getClickCount() == 2){
+												int row = linksTable.rowAtPoint(mouseEvent.getPoint());
+												int col = linksTable.columnAtPoint(mouseEvent.getPoint());
+												if(col == 0){
+													System.out.println(linksTable.getValueAt(row,col));
+													String address = (String) linksTable.getValueAt(row,col);
+													System.out.println("address: " + address);
+													try{
+														webReader.showPage(address);
+														updateLinks(address);
+														addressField.setText(address);
+													}catch (IOException | BadLocationException e) {
+														e.printStackTrace();
+													}
+												}
+											}
+										}
+									});
+
+				linksTable.setModel(defaultTableModel);
 		linksScrollPane = new JScrollPane(linksTable);
 		getContentPane().add(linksScrollPane,BorderLayout.EAST);
 		pack();
@@ -73,24 +100,29 @@ class Window extends JFrame{
 
 	private void updateLinks(String address) throws IOException, BadLocationException {
 		InputStream in = new URL(address).openConnection().getInputStream();
-		InputStreamReader reader = new InputStreamReader(in);
+		InputStreamReader reader = new InputStreamReader(in,"iso-8859-1");
 
 		links.clear();
 		titles.clear();
 
 		HTMLDocument doc = new HTMLDocument();
-		doc.putProperty("IgnoreCharsetDirective",true);
+		doc.putProperty("IgnoreCharsetDirective", Boolean.TRUE);
+
 		new HTMLEditorKit().read(reader,doc,0);
 		HTMLDocument.Iterator it = doc.getIterator(HTML.Tag.A);
 		while(it.isValid()){
 			String link = (String) it.getAttributes().getAttribute(HTML.Attribute.HREF);
-			int start = it.getStartOffset();
-			int len = it.getEndOffset()-start;
-			String title = doc.getText(start,len);
 
-			links.add(link);
-			titles.add(title);
-			System.out.println(title + ": " + link);
+			// only add links which start with 'http'
+			if(link != null && link.length() > 4 && link.substring(0,4).equals("http")){
+				int start = it.getStartOffset();
+				int len = it.getEndOffset()-start;
+				String title = doc.getText(start,len);
+
+				links.add(link);
+				titles.add(title);
+				System.out.println(title + ": " + link);
+			}
 			it.next();
 		}
 
@@ -102,6 +134,7 @@ class Window extends JFrame{
 			defaultTableModel.insertRow(0,new Object[] { links.get(i), titles.get(i)});
 		}
 		defaultTableModel.setRowCount(TABLE_MAX_ROWS); // calls for a UI update
+		linksTable.setModel(defaultTableModel);
 	}
 
 	public static void main(String[] args){
