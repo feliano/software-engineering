@@ -40,6 +40,7 @@ class Window extends JFrame {
 		JScrollPane readerScrollPane = new JScrollPane(webReader);
 		getContentPane().add(readerScrollPane,BorderLayout.CENTER);
 
+
 		linksTable = new JTable(TABLE_MAX_ROWS,TABLE_NUM_COLUMNS);
 
 		String[] header = {"Web Adress","About"};
