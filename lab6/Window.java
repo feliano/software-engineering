@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.table.*;
 import javax.swing.text.*;
 import javax.swing.text.html.HTML;
@@ -31,7 +33,6 @@ class Window extends JFrame {
 
 		addressField = new JTextField("http://www.nada.kth.se/~henrik");
 		addressField.addActionListener(event -> {
-            String address = event.getActionCommand();
 			new Thread(new DataLoader()).start();
 		});
 		getContentPane().add(addressField,BorderLayout.NORTH);
@@ -39,13 +40,17 @@ class Window extends JFrame {
 		webReader = new WebReader();
 		JScrollPane readerScrollPane = new JScrollPane(webReader);
 		getContentPane().add(readerScrollPane,BorderLayout.CENTER);
-
+		webReader.addHyperlinkListener(hyperlinkEvent -> {
+            if(hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED){
+                    addressField.setText(hyperlinkEvent.getURL().toString());
+                    new Thread(new DataLoader()).start();
+                }
+            });
 
 		linksTable = new JTable(TABLE_MAX_ROWS,TABLE_NUM_COLUMNS);
 
 		String[] header = {"Web Adress","About"};
-		String[][] data = {};
-		DefaultTableModel defaultTableModel = new DefaultTableModel(data,header) {
+		DefaultTableModel defaultTableModel = new DefaultTableModel(new String[][]{},header) {
 			@Override
 			public boolean isCellEditable(int i, int i1) {
 				return false;
@@ -62,9 +67,9 @@ class Window extends JFrame {
 												int col = linksTable.columnAtPoint(mouseEvent.getPoint());
 												if(col == 0){
 													String address = (String) linksTable.getValueAt(row,col);
-														addressField.setText(address);
-														new Thread(new DataLoader()).start();
-													}
+													addressField.setText(address);
+													new Thread(new DataLoader()).start();
+												}
 											}
 										}
 									});
@@ -87,21 +92,6 @@ class Window extends JFrame {
 		new HTMLEditorKit().read(reader,doc,0);
 		HTMLDocument.Iterator it = doc.getIterator(HTML.Tag.A);
 
-		/*
-		InputStream in2 = new URL(address).openConnection().getInputStream();
-		InputStreamReader reader2 = new InputStreamReader(in2,"iso-8859-1");
-
-		new ParserDelegator().parse(reader2,new HTMLEditorKit.ParserCallback(){
-			@Override
-			public void handleStartTag(HTML.Tag tag, MutableAttributeSet a, int pos){
-				if(tag.equals(HTML.Tag.A)){
-					String link = (String) a.getAttribute(HTML.Attribute.HREF);
-					System.out.println(link);
-				}
-			}
-		},true);
-		*/
-
 		while(it.isValid()){
 			String link = (String) it.getAttributes().getAttribute(HTML.Attribute.HREF);
 			// only add links which start with 'http'
@@ -123,7 +113,7 @@ class Window extends JFrame {
 		for (int i = 0; i < numLinks; i++) {
 			defaultTableModel.addRow(new Object[] { links.get(i), titles.get(i)});
 		}
-		defaultTableModel.setRowCount(TABLE_MAX_ROWS); // calls for a UI update
+		defaultTableModel.setRowCount(TABLE_MAX_ROWS); // this updates UI
 		linksTable.setModel(defaultTableModel);
 	}
 
@@ -147,5 +137,4 @@ class Window extends JFrame {
 			}
 		}
 	}
-
 }
