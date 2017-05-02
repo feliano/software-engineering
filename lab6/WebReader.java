@@ -16,6 +16,4 @@ class WebReader extends JEditorPane{
         setPage(new URL(address));
     }
 
-
-
 }

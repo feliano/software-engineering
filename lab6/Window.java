@@ -11,18 +11,16 @@ import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 
-class Window extends JFrame{
+class Window extends JFrame {
 
-	final static int TABLE_MAX_ROWS = 50;
-	final static int TABLE_NUM_COLUMNS = 2;
+	private final static int TABLE_MAX_ROWS = 50;
+	private final static int TABLE_NUM_COLUMNS = 2;
 
-	JTextField addressField;
-	WebReader webReader;
-	JTable linksTable;
-	JScrollPane linksScrollPane;
-	JScrollPane readerScrollPane;
-	ArrayList<String> links = new ArrayList<>();
-	ArrayList<String> titles = new ArrayList<>();
+	private JTextField addressField;
+	private WebReader webReader;
+	private JTable linksTable;
+	private ArrayList<String> links = new ArrayList<>();
+	private ArrayList<String> titles = new ArrayList<>();
 
 	public Window(){
 		setTitle("Browser");
@@ -34,19 +32,12 @@ class Window extends JFrame{
 		addressField = new JTextField("http://www.nada.kth.se/~henrik");
 		addressField.addActionListener(event -> {
             String address = event.getActionCommand();
-            System.out.println(address);
-            try{
-                webReader.showPage(address);
-				updateLinks(address);
-            } catch (IOException | BadLocationException e) {
-                displayError("Couldn't open page: " + e.getMessage());
-            	e.printStackTrace();
-            }
+			new Thread(new DataLoader()).start();
 		});
 		getContentPane().add(addressField,BorderLayout.NORTH);
 
 		webReader = new WebReader();
-		readerScrollPane = new JScrollPane(webReader);
+		JScrollPane readerScrollPane = new JScrollPane(webReader);
 		getContentPane().add(readerScrollPane,BorderLayout.CENTER);
 
 		linksTable = new JTable(TABLE_MAX_ROWS,TABLE_NUM_COLUMNS);
@@ -70,20 +61,14 @@ class Window extends JFrame{
 												int col = linksTable.columnAtPoint(mouseEvent.getPoint());
 												if(col == 0){
 													String address = (String) linksTable.getValueAt(row,col);
-													try{
-														webReader.showPage(address);
-														updateLinks(address);
 														addressField.setText(address);
-													}catch (IOException | BadLocationException e) {
-														displayError("Couldn't open page: " + e.getMessage());
-														e.printStackTrace();
+														new Thread(new DataLoader()).start();
 													}
-												}
 											}
 										}
 									});
 		linksTable.setModel(defaultTableModel);
-		linksScrollPane = new JScrollPane(linksTable);
+		JScrollPane linksScrollPane = new JScrollPane(linksTable);
 		getContentPane().add(linksScrollPane,BorderLayout.EAST);
 		pack();
 	}
@@ -100,6 +85,21 @@ class Window extends JFrame{
 
 		new HTMLEditorKit().read(reader,doc,0);
 		HTMLDocument.Iterator it = doc.getIterator(HTML.Tag.A);
+
+		/*
+		InputStream in2 = new URL(address).openConnection().getInputStream();
+		InputStreamReader reader2 = new InputStreamReader(in2,"iso-8859-1");
+
+		new ParserDelegator().parse(reader2,new HTMLEditorKit.ParserCallback(){
+			@Override
+			public void handleStartTag(HTML.Tag tag, MutableAttributeSet a, int pos){
+				if(tag.equals(HTML.Tag.A)){
+					String link = (String) a.getAttribute(HTML.Attribute.HREF);
+					System.out.println(link);
+				}
+			}
+		},true);
+		*/
 
 		while(it.isValid()){
 			String link = (String) it.getAttributes().getAttribute(HTML.Attribute.HREF);
@@ -120,7 +120,7 @@ class Window extends JFrame{
 		// update JTable
 		int numLinks = (links.size() > TABLE_MAX_ROWS ? TABLE_MAX_ROWS : links.size()); // limit num of links
 		for (int i = 0; i < numLinks; i++) {
-			defaultTableModel.insertRow(0,new Object[] { links.get(i), titles.get(i)});
+			defaultTableModel.addRow(new Object[] { links.get(i), titles.get(i)});
 		}
 		defaultTableModel.setRowCount(TABLE_MAX_ROWS); // calls for a UI update
 		linksTable.setModel(defaultTableModel);
@@ -132,6 +132,19 @@ class Window extends JFrame{
 
 	public static void main(String[] args){
 		new Window();
+	}
+
+	private class DataLoader implements Runnable{
+		@Override
+		public void run() {
+			String address = addressField.getText();
+			try {
+				webReader.showPage(addressField.getText());
+				updateLinks(address);
+			} catch (IOException | BadLocationException e) {
+				displayError("Couldn't open page: " + e.getMessage());
+			}
+		}
 	}
 
 }
