@@ -27,6 +27,8 @@ class Window extends JFrame {
 	private ArrayList<String> titles = new ArrayList<>();
 	private JButton backButton;
 	private JButton forwardButton;
+	private JButton addBookmarkButton;
+	private JButton showBookmarksButton;
 
 	public Window(){
 		setTitle("Browser");
@@ -46,22 +48,12 @@ class Window extends JFrame {
 		backButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				/*
-				webReader.stepBack();
-				addressField.setText(webReader.getCurrentAddress());
-				updateUI(webReader.getCurrentAddress());
-				*/
 				new Thread(new DataLoader(2)).start();
 			}
 		});
 		forwardButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				/*
-				webReader.stepForward();
-				addressField.setText(webReader.getCurrentAddress());
-				updateUI(webReader.getCurrentAddress());
-				*/
 				new Thread(new DataLoader(1)).start();
 			}
 		});
@@ -78,6 +70,19 @@ class Window extends JFrame {
 			new Thread(new DataLoader(0)).start();
 		});
 		navigator.add(addressField);
+		navigator.add(Box.createRigidArea(new Dimension(5,0)));
+
+		addBookmarkButton = new JButton("+");
+		addBookmarkButton.setEnabled(true);
+		addBookmarkButton.setPreferredSize(new Dimension(50,30));
+		navigator.add(addBookmarkButton);
+		navigator.add(Box.createRigidArea(new Dimension(5,0)));
+
+		showBookmarksButton = new JButton("*");
+		showBookmarksButton.setEnabled(false);
+		showBookmarksButton.setPreferredSize(new Dimension(50,30));
+		navigator.add(showBookmarksButton);
+		navigator.add(Box.createRigidArea(new Dimension(5,0)));
 
 		getContentPane().add(navigator,BorderLayout.NORTH);
 
