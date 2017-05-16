@@ -49,9 +49,8 @@ class Window extends JFrame {
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
 					webReader.stepBack();
-					updateButtonStates();
 					addressField.setText(webReader.getCurrentAddress());
-					updateLinks(webReader.getCurrentAddress());
+					updateUI(webReader.getCurrentAddress());
 				}catch (IOException | BadLocationException e){
 					e.printStackTrace();
 				}
@@ -62,10 +61,8 @@ class Window extends JFrame {
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
 					webReader.stepForward();
-					updateButtonStates();
 					addressField.setText(webReader.getCurrentAddress());
-					addressField.setText(webReader.getCurrentAddress());
-					updateLinks(webReader.getCurrentAddress());
+					updateUI(webReader.getCurrentAddress());
 				}catch (IOException | BadLocationException e){
 					e.printStackTrace();
 				}
@@ -142,7 +139,6 @@ class Window extends JFrame {
 		}else{
 			forwardButton.setEnabled(false);
 		}
-
 	}
 
 	private void updateLinks(String address) throws IOException, BadLocationException {
@@ -183,6 +179,11 @@ class Window extends JFrame {
 		linksTable.setModel(defaultTableModel);
 	}
 
+	private void updateUI(String address) throws IOException, BadLocationException {
+		updateLinks(address);
+		updateButtonStates();
+	}
+
 	private void displayError(String message){
 		JOptionPane.showMessageDialog (this, message, "Error", JOptionPane.ERROR_MESSAGE);
 	}
@@ -197,8 +198,7 @@ class Window extends JFrame {
 			String address = addressField.getText();
 			try {
 				webReader.showPage(addressField.getText());
-				updateLinks(address);
-				updateButtonStates();
+				updateUI(address);
 			} catch (IOException | BadLocationException e) {
 				displayError("Couldn't open page: " + e.getMessage());
 			}

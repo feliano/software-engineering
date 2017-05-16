@@ -8,9 +8,9 @@ import javax.swing.*;
 
 class WebReader extends JEditorPane{
 
-    Deque<String> laterAdresses = new ArrayDeque();
-    Deque<String> earlierAdresses = new ArrayDeque<>();
-    String currentAddress = null;
+    private Deque<String> laterAdresses = new ArrayDeque();
+    private Deque<String> earlierAdresses = new ArrayDeque<>();
+    private String currentAddress = null;
 
     WebReader(){
         setContentType("text/html");
@@ -33,16 +33,15 @@ class WebReader extends JEditorPane{
         setPage(new URL(address));
     }
 
-    public boolean earlierAdressesExists(){
-        System.out.println(earlierAdresses.size());
+    boolean earlierAdressesExists(){
         return !earlierAdresses.isEmpty();
     }
 
-    public boolean laterAdressesExists(){
+    boolean laterAdressesExists(){
         return !laterAdresses.isEmpty();
     }
 
-    public String getCurrentAddress(){
+    String getCurrentAddress(){
         return currentAddress;
     }
 
