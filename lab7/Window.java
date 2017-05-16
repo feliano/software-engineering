@@ -23,8 +23,11 @@ class Window extends JFrame {
 	private JTextField addressField;
 	private WebReader webReader;
 	private JTable linksTable;
+
 	private ArrayList<String> links = new ArrayList<>();
 	private ArrayList<String> titles = new ArrayList<>();
+	private ArrayList<Bookmark> bookmarks = new ArrayList<>();
+
 	private JButton backButton;
 	private JButton forwardButton;
 	private JButton addBookmarkButton;
@@ -69,18 +72,28 @@ class Window extends JFrame {
 		addressField.addActionListener(event -> {
 			new Thread(new DataLoader(0)).start();
 		});
+
 		navigator.add(addressField);
 		navigator.add(Box.createRigidArea(new Dimension(5,0)));
 
 		addBookmarkButton = new JButton("+");
 		addBookmarkButton.setEnabled(true);
 		addBookmarkButton.setPreferredSize(new Dimension(50,30));
+		addBookmarkButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				// Add bookmark
+				//Bookmark bookmark = new Bookmark(addressField.getText());
+				new BookmarkDialog(false).show();
+			}
+		});
 		navigator.add(addBookmarkButton);
 		navigator.add(Box.createRigidArea(new Dimension(5,0)));
 
 		showBookmarksButton = new JButton("*");
 		showBookmarksButton.setEnabled(false);
 		showBookmarksButton.setPreferredSize(new Dimension(50,30));
+		//showBookmarksButton.addActionListener();
 		navigator.add(showBookmarksButton);
 		navigator.add(Box.createRigidArea(new Dimension(5,0)));
 
@@ -225,4 +238,76 @@ class Window extends JFrame {
 			}
 		}
 	}
+
+
+	private class BookmarkDialog{
+
+		JTextField dialogAddressField = new JTextField(addressField.getText());
+		JTextField dialogNameField = new JTextField();
+		JTextField dialogInfoField = new JTextField();
+		boolean isAddNewBookmark = true;
+
+		BookmarkDialog(boolean isAddNewBookmark){
+			this.isAddNewBookmark = isAddNewBookmark;
+		}
+
+		void show() {
+			if(isAddNewBookmark){
+				addNewBookmark();
+			}else{
+				editExistingBookmark();
+			}
+		}
+
+		void addNewBookmark(){
+
+			Object[] options = {"Save",
+					"Cancel"};
+
+			JPanel panel = new JPanel(new GridLayout(0,1));
+			panel.add(new JLabel("Address"));
+			panel.add(dialogAddressField);
+			panel.add(new JLabel("Name"));
+			panel.add(dialogNameField);
+			panel.add(new JLabel("Info"));
+			panel.add(dialogInfoField);
+			int selection = JOptionPane.showOptionDialog(null,panel,"new bookmark",JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,options,null);
+			if(selection == 0){
+				// create new bookmark
+				bookmarks.add(new Bookmark(dialogAddressField.getText(),dialogNameField.getText(),dialogInfoField.getText()));
+			}
+			System.out.println(selection);
+		}
+
+		// TODO: pass index of bookmark as parameter
+		void editExistingBookmark() {
+
+			Object[] options = {"Save",
+					"Delete","Cancel",};
+
+			JPanel panel = new JPanel(new GridLayout(0,1));
+			panel.add(new JLabel("Address"));
+			panel.add(dialogAddressField);
+			panel.add(new JLabel("Name"));
+			panel.add(dialogNameField);
+			panel.add(new JLabel("Info"));
+			panel.add(dialogInfoField);
+			int selection = JOptionPane.showOptionDialog(null,panel,"new bookmark",JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,options,null);
+
+			System.out.println(selection);
+
+			if(selection == 0){
+				// Update bookmark, save changes
+			}else if(selection == 1){
+				// delete bookmark
+			}
+
+		}
+
+	}
+
 }
+
+
+
+
