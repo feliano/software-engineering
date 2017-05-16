@@ -33,7 +33,7 @@ class Window extends JFrame {
 	private JButton addBookmarkButton;
 	private JButton showBookmarksButton;
 
-	private boolean showBookmarks = false;
+	private boolean displayBookmarks = false;
 
 	public Window(){
 		setTitle("Browser");
@@ -87,6 +87,9 @@ class Window extends JFrame {
 				// Add bookmark
 				//Bookmark bookmark = new Bookmark(addressField.getText());
 				new BookmarkDialog(true).show();
+				if(displayBookmarks){
+					toggleBookmarks(true);
+				}
 			}
 		});
 		navigator.add(addBookmarkButton);
@@ -98,7 +101,11 @@ class Window extends JFrame {
 		showBookmarksButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				toggleBookmarks();
+				if(displayBookmarks == true){
+					toggleBookmarks(false);
+				}else{
+					toggleBookmarks(true);
+				}
 			}
 		});
 		navigator.add(showBookmarksButton);
@@ -128,20 +135,25 @@ class Window extends JFrame {
 		defaultTableModel.setRowCount(TABLE_MAX_ROWS);
 		defaultTableModel.setColumnCount(TABLE_NUM_COLUMNS);
 
+		// sorts the bookmarks
+		linksTable.setAutoCreateRowSorter(true);
+
 		linksTable.addMouseListener(new MouseAdapter() {
-										@Override
-										public void mousePressed(MouseEvent mouseEvent) {
-											if(mouseEvent.getClickCount() == 2){
-												int row = linksTable.rowAtPoint(mouseEvent.getPoint());
-												int col = linksTable.columnAtPoint(mouseEvent.getPoint());
-												if(col == 0){
-													String address = (String) linksTable.getValueAt(row,col);
-													addressField.setText(address);
-													new Thread(new DataLoader(0)).start();
-												}
-											}
-										}
-									});
+					@Override
+					public void mousePressed(MouseEvent mouseEvent) {
+						if (mouseEvent.getClickCount() == 2) {
+							int row = linksTable.rowAtPoint(mouseEvent.getPoint());
+							int col = linksTable.columnAtPoint(mouseEvent.getPoint());
+							if (col == 0) {
+								String address = (String) linksTable.getValueAt(row, col);
+								addressField.setText(address);
+								new Thread(new DataLoader(0)).start();
+								showBookmarksButton.setBackground(null);
+								displayBookmarks = false;
+							}
+						}
+					}
+				});
 		linksTable.setModel(defaultTableModel);
 		JScrollPane linksScrollPane = new JScrollPane(linksTable);
 		getContentPane().add(linksScrollPane,BorderLayout.EAST);
@@ -206,10 +218,11 @@ class Window extends JFrame {
 		updateButtonStates();
 	}
 
-	private void toggleBookmarks(){
-
-		if(showBookmarks){
+	private void toggleBookmarks(boolean showBookmarks){
+		displayBookmarks = showBookmarks;
+		if(!showBookmarks){
 			// hide, show links instead
+			showBookmarksButton.setBackground(null);
 			DefaultTableModel defaultTableModel = (DefaultTableModel) linksTable.getModel();
 			defaultTableModel.setRowCount(0);
 			// update JTable
@@ -219,10 +232,9 @@ class Window extends JFrame {
 			}
 			defaultTableModel.setRowCount(TABLE_MAX_ROWS); // this updates UI
 			linksTable.setModel(defaultTableModel);
-			showBookmarks = false;
-
 		}else{
 			//show
+			showBookmarksButton.setBackground(Color.GRAY);
 			DefaultTableModel defaultTableModel = (DefaultTableModel) linksTable.getModel();
 			defaultTableModel.setRowCount(0);
 			// update JTable
@@ -234,8 +246,6 @@ class Window extends JFrame {
 			}
 			defaultTableModel.setRowCount(bookmarks.size()); // this updates UI
 			linksTable.setModel(defaultTableModel);
-			showBookmarks = true;
-
 		}
 
 	}
@@ -286,7 +296,6 @@ class Window extends JFrame {
 
 		JTextField dialogAddressField = new JTextField(addressField.getText());
 		JTextField dialogNameField = new JTextField();
-		JTextField dialogInfoField = new JTextField();
 		boolean isAddNewBookmark = true;
 		int bookmarkIndex = -1;
 
@@ -317,12 +326,10 @@ class Window extends JFrame {
 			panel.add(dialogAddressField);
 			panel.add(new JLabel("Name"));
 			panel.add(dialogNameField);
-			panel.add(new JLabel("Info"));
-			panel.add(dialogInfoField);
 			int selection = JOptionPane.showOptionDialog(null,panel,"new bookmark",JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,options,null);
 			if(selection == 0){
 				// create new bookmark
-				bookmarks.add(new Bookmark(dialogAddressField.getText(),dialogNameField.getText(),dialogInfoField.getText()));
+				bookmarks.add(new Bookmark(dialogAddressField.getText(),dialogNameField.getText()));
 			}
 			System.out.println(selection);
 		}
@@ -338,20 +345,14 @@ class Window extends JFrame {
 			panel.add(dialogAddressField);
 			panel.add(new JLabel("Name"));
 			panel.add(dialogNameField);
-			panel.add(new JLabel("Info"));
-			panel.add(dialogInfoField);
 			int selection = JOptionPane.showOptionDialog(null,panel,"new bookmark",JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,options,null);
-
-			System.out.println(selection);
 
 			if(selection == 0){
 				// Update bookmark, save changes
 			}else if(selection == 1){
 				// delete bookmark
 			}
-
 		}
-
 	}
 
 }
