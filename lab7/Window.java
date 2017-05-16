@@ -28,7 +28,6 @@ class Window extends JFrame {
 	private JButton backButton;
 	private JButton forwardButton;
 
-
 	public Window(){
 		setTitle("Browser");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -47,25 +46,23 @@ class Window extends JFrame {
 		backButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				try{
-					webReader.stepBack();
-					addressField.setText(webReader.getCurrentAddress());
-					updateUI(webReader.getCurrentAddress());
-				}catch (IOException | BadLocationException e){
-					e.printStackTrace();
-				}
+				/*
+				webReader.stepBack();
+				addressField.setText(webReader.getCurrentAddress());
+				updateUI(webReader.getCurrentAddress());
+				*/
+				new Thread(new DataLoader(2)).start();
 			}
 		});
 		forwardButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				try{
-					webReader.stepForward();
-					addressField.setText(webReader.getCurrentAddress());
-					updateUI(webReader.getCurrentAddress());
-				}catch (IOException | BadLocationException e){
-					e.printStackTrace();
-				}
+				/*
+				webReader.stepForward();
+				addressField.setText(webReader.getCurrentAddress());
+				updateUI(webReader.getCurrentAddress());
+				*/
+				new Thread(new DataLoader(1)).start();
 			}
 		});
 		backButton.setPreferredSize(new Dimension(50,30));
@@ -78,7 +75,7 @@ class Window extends JFrame {
 
 		addressField = new JTextField("http://www.nada.kth.se/~henrik");
 		addressField.addActionListener(event -> {
-			new Thread(new DataLoader()).start();
+			new Thread(new DataLoader(0)).start();
 		});
 		navigator.add(addressField);
 
@@ -90,7 +87,7 @@ class Window extends JFrame {
 		webReader.addHyperlinkListener(hyperlinkEvent -> {
             if(hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED){
                     addressField.setText(hyperlinkEvent.getURL().toString());
-                    new Thread(new DataLoader()).start();
+                    new Thread(new DataLoader(0)).start();
                 }
             });
 
@@ -115,7 +112,7 @@ class Window extends JFrame {
 												if(col == 0){
 													String address = (String) linksTable.getValueAt(row,col);
 													addressField.setText(address);
-													new Thread(new DataLoader()).start();
+													new Thread(new DataLoader(0)).start();
 												}
 											}
 										}
@@ -193,13 +190,32 @@ class Window extends JFrame {
 	}
 
 	private class DataLoader implements Runnable{
+
+		// 0 - use address in addressfield, 1 - step forward, 2 - step back
+		int mode = 0;
+		DataLoader(int m){
+			mode = m;
+			if(mode != 0 && mode != 1 && mode != 2){
+				throw(new IllegalArgumentException("Expected range for argument 0-2, was: " + mode));
+			}
+		}
+
 		@Override
 		public void run() {
-			String address = addressField.getText();
 			try {
-				webReader.showPage(addressField.getText());
-				updateUI(address);
-			} catch (IOException | BadLocationException e) {
+				if(mode == 0){
+					webReader.showPage(addressField.getText());
+				}else if(mode == 1){
+					webReader.stepForward();
+					addressField.setText(webReader.getCurrentAddress());
+				}else if(mode == 2){
+					webReader.stepBack();
+					addressField.setText(webReader.getCurrentAddress());
+				}else{
+					throw(new IllegalArgumentException("Expected range for argument 0-2, was: " + mode));
+				}
+				updateUI(addressField.getText());
+			}catch (IOException | BadLocationException e) {
 				displayError("Couldn't open page: " + e.getMessage());
 			}
 		}

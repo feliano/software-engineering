@@ -21,16 +21,17 @@ class WebReader extends JEditorPane{
 
     void stepBack() throws IOException{
         String address = earlierAdresses.pop();
+        setPage(new URL(address));
         laterAdresses.push(currentAddress);
         currentAddress = address;
-        setPage(new URL(address));
     }
 
     void stepForward() throws IOException{
         String address = laterAdresses.pop();
+        setPage(new URL(address));
         earlierAdresses.push(currentAddress);
         currentAddress = address;
-        setPage(new URL(address));
+
     }
 
     boolean earlierAdressesExists(){
@@ -46,6 +47,16 @@ class WebReader extends JEditorPane{
     }
 
     void showPage(String address) throws IOException {
+
+        // necessary check that the http response is okay, setPage() doesn't complain about 410s for example.
+        HttpURLConnection connection = (HttpURLConnection) new URL(address).openConnection();
+        connection.setRequestMethod("GET");
+        connection.connect();
+        int responseCode = connection.getResponseCode();
+        if(responseCode != 200){
+            throw new IOException("code: " + responseCode);
+        }
+
         setPage(new URL(address));
         if(currentAddress != null){
             earlierAdresses.push(currentAddress);
