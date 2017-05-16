@@ -33,6 +33,8 @@ class Window extends JFrame {
 	private JButton addBookmarkButton;
 	private JButton showBookmarksButton;
 
+	private boolean showBookmarks = false;
+
 	public Window(){
 		setTitle("Browser");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -84,16 +86,21 @@ class Window extends JFrame {
 			public void actionPerformed(ActionEvent actionEvent) {
 				// Add bookmark
 				//Bookmark bookmark = new Bookmark(addressField.getText());
-				new BookmarkDialog(false).show();
+				new BookmarkDialog(true).show();
 			}
 		});
 		navigator.add(addBookmarkButton);
 		navigator.add(Box.createRigidArea(new Dimension(5,0)));
 
 		showBookmarksButton = new JButton("*");
-		showBookmarksButton.setEnabled(false);
+		showBookmarksButton.setEnabled(true);
 		showBookmarksButton.setPreferredSize(new Dimension(50,30));
-		//showBookmarksButton.addActionListener();
+		showBookmarksButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				toggleBookmarks();
+			}
+		});
 		navigator.add(showBookmarksButton);
 		navigator.add(Box.createRigidArea(new Dimension(5,0)));
 
@@ -199,6 +206,41 @@ class Window extends JFrame {
 		updateButtonStates();
 	}
 
+	private void toggleBookmarks(){
+
+		if(showBookmarks){
+			// hide, show links instead
+			DefaultTableModel defaultTableModel = (DefaultTableModel) linksTable.getModel();
+			defaultTableModel.setRowCount(0);
+			// update JTable
+			int numLinks = (links.size() > TABLE_MAX_ROWS ? TABLE_MAX_ROWS : links.size()); // limit num of links
+			for (int i = 0; i < numLinks; i++) {
+				defaultTableModel.addRow(new Object[] { links.get(i), titles.get(i)});
+			}
+			defaultTableModel.setRowCount(TABLE_MAX_ROWS); // this updates UI
+			linksTable.setModel(defaultTableModel);
+			showBookmarks = false;
+
+		}else{
+			//show
+			DefaultTableModel defaultTableModel = (DefaultTableModel) linksTable.getModel();
+			defaultTableModel.setRowCount(0);
+			// update JTable
+			//int numLinks = (links.size() > TABLE_MAX_ROWS ? TABLE_MAX_ROWS : links.size()); // limit num of links
+			int numLinks = bookmarks.size();
+			System.out.print(bookmarks.size());
+			for (int i = 0; i < numLinks; i++) {
+				defaultTableModel.addRow(new Object[] { bookmarks.get(i).getAddress(), bookmarks.get(i).getName()});
+			}
+			defaultTableModel.setRowCount(bookmarks.size()); // this updates UI
+			linksTable.setModel(defaultTableModel);
+			showBookmarks = true;
+
+		}
+
+	}
+
+
 	private void displayError(String message){
 		JOptionPane.showMessageDialog (this, message, "Error", JOptionPane.ERROR_MESSAGE);
 	}
@@ -246,9 +288,15 @@ class Window extends JFrame {
 		JTextField dialogNameField = new JTextField();
 		JTextField dialogInfoField = new JTextField();
 		boolean isAddNewBookmark = true;
+		int bookmarkIndex = -1;
 
 		BookmarkDialog(boolean isAddNewBookmark){
 			this.isAddNewBookmark = isAddNewBookmark;
+		}
+
+		BookmarkDialog(boolean isAddNewBookmark,int bookmarkIndex){
+			this.isAddNewBookmark = isAddNewBookmark;
+			this.bookmarkIndex = bookmarkIndex;
 		}
 
 		void show() {
