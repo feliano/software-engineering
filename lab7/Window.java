@@ -44,13 +44,15 @@ class Window extends JFrame {
 		forwardButton = new JButton("->");
 		backButton.setEnabled(false);
 		forwardButton.setEnabled(false);
-
 		backButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
 					webReader.stepBack();
-				}catch (IOException e){
+					updateButtonStates();
+					addressField.setText(webReader.getCurrentAddress());
+					updateLinks(webReader.getCurrentAddress());
+				}catch (IOException | BadLocationException e){
 					e.printStackTrace();
 				}
 			}
@@ -60,12 +62,15 @@ class Window extends JFrame {
 			public void actionPerformed(ActionEvent actionEvent) {
 				try{
 					webReader.stepForward();
-				}catch (IOException e){
+					updateButtonStates();
+					addressField.setText(webReader.getCurrentAddress());
+					addressField.setText(webReader.getCurrentAddress());
+					updateLinks(webReader.getCurrentAddress());
+				}catch (IOException | BadLocationException e){
 					e.printStackTrace();
 				}
 			}
 		});
-
 		backButton.setPreferredSize(new Dimension(50,30));
 		forwardButton.setPreferredSize(new Dimension(50,30));
 
@@ -125,8 +130,17 @@ class Window extends JFrame {
 	}
 
 	private void updateButtonStates(){
-		if(webReader.earlierAdressesExists()){
 
+		if(webReader.earlierAdressesExists()){
+			backButton.setEnabled(true);
+		}else{
+			backButton.setEnabled(false);
+		}
+
+		if(webReader.laterAdressesExists()){
+			forwardButton.setEnabled(true);
+		}else{
+			forwardButton.setEnabled(false);
 		}
 
 	}

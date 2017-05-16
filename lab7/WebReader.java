@@ -10,6 +10,7 @@ class WebReader extends JEditorPane{
 
     Deque<String> laterAdresses = new ArrayDeque();
     Deque<String> earlierAdresses = new ArrayDeque<>();
+    String currentAddress = null;
 
     WebReader(){
         setContentType("text/html");
@@ -19,26 +20,38 @@ class WebReader extends JEditorPane{
     }
 
     void stepBack() throws IOException{
-        showPage(earlierAdresses.getFirst());
+        String address = earlierAdresses.pop();
+        laterAdresses.push(currentAddress);
+        currentAddress = address;
+        setPage(new URL(address));
     }
 
     void stepForward() throws IOException{
-        showPage(laterAdresses.getFirst());
+        String address = laterAdresses.pop();
+        earlierAdresses.push(currentAddress);
+        currentAddress = address;
+        setPage(new URL(address));
     }
 
     public boolean earlierAdressesExists(){
+        System.out.println(earlierAdresses.size());
         return !earlierAdresses.isEmpty();
     }
 
     public boolean laterAdressesExists(){
-        return !laterAdressesExists();
+        return !laterAdresses.isEmpty();
     }
 
-
-
+    public String getCurrentAddress(){
+        return currentAddress;
+    }
 
     void showPage(String address) throws IOException {
         setPage(new URL(address));
-        laterAdresses.push(address);
+        if(currentAddress != null){
+            earlierAdresses.push(currentAddress);
+        }
+        currentAddress = address;
+        laterAdresses.clear();
     }
 }
