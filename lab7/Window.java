@@ -66,8 +66,11 @@ class Window extends JFrame {
 		BoxLayout navigatorLayout = new BoxLayout(navigator,BoxLayout.X_AXIS);
 		navigator.setLayout(navigatorLayout);
 
-		backButton = new JButton("<-");
-		forwardButton = new JButton("->");
+		backButton = new JButton();
+		backButton.setIcon(new ImageIcon("arrow_left.png"));
+		forwardButton = new JButton();
+		forwardButton.setIcon(new ImageIcon("arrow_right.png"));
+
 		backButton.setEnabled(false);
 		forwardButton.setEnabled(false);
 
@@ -83,8 +86,8 @@ class Window extends JFrame {
 				new Thread(new DataLoader(1)).start();
 			}
 		});
-		backButton.setPreferredSize(new Dimension(50,30));
-		forwardButton.setPreferredSize(new Dimension(50,30));
+		backButton.setPreferredSize(new Dimension(30,30));
+		forwardButton.setPreferredSize(new Dimension(30,30));
 
 		navigator.add(Box.createRigidArea(new Dimension(5,0))); // padding
 		navigator.add(backButton);
@@ -99,9 +102,10 @@ class Window extends JFrame {
 		navigator.add(addressField);
 		navigator.add(Box.createRigidArea(new Dimension(5,0)));
 
-		addBookmarkButton = new JButton("+");
+		addBookmarkButton = new JButton();
+		addBookmarkButton.setIcon(new ImageIcon("star.png"));
 		addBookmarkButton.setEnabled(true);
-		addBookmarkButton.setPreferredSize(new Dimension(50,30));
+		addBookmarkButton.setPreferredSize(new Dimension(40,40));
 		addBookmarkButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -112,9 +116,10 @@ class Window extends JFrame {
 		navigator.add(addBookmarkButton);
 		navigator.add(Box.createRigidArea(new Dimension(5,0)));
 
-		editBookmarksButton = new JButton("~");
+		editBookmarksButton = new JButton();
+		editBookmarksButton.setIcon(new ImageIcon("edit.png"));
 		editBookmarksButton.setVisible(false);
-		editBookmarksButton.setPreferredSize(new Dimension(50,30));
+		editBookmarksButton.setPreferredSize(new Dimension(40,40));
 		editBookmarksButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -130,9 +135,10 @@ class Window extends JFrame {
 		navigator.add(editBookmarksButton);
 		navigator.add(Box.createRigidArea(new Dimension(5,0)));
 
-		showBookmarksButton = new JButton("*");
+		showBookmarksButton = new JButton();
+		showBookmarksButton.setIcon(new ImageIcon("list.png"));
 		showBookmarksButton.setEnabled(true);
-		showBookmarksButton.setPreferredSize(new Dimension(50,30));
+		showBookmarksButton.setPreferredSize(new Dimension(40,40));
 		showBookmarksButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -384,7 +390,7 @@ class Window extends JFrame {
 			panel.add(dialogAddressField);
 			panel.add(new JLabel("Name"));
 			panel.add(dialogNameField);
-			int selection = JOptionPane.showOptionDialog(null,panel,"new bookmark",JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,options,null);
+			int selection = JOptionPane.showOptionDialog(null,panel,"New Bookmark",JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,options,null);
 			if(selection == 0){
 				// create new bookmark
 				bookmarks.add(new Bookmark(dialogAddressField.getText(),dialogNameField.getText()));
