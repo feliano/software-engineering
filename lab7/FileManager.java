@@ -1,5 +1,7 @@
+import jdk.nashorn.internal.parser.JSONParser;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 
 import java.awt.print.Book;
 import java.io.File;
@@ -24,14 +26,22 @@ public class FileManager {
 
 
     public ArrayList<Bookmark> loadBookMarks(String fileName){
+        ArrayList<Bookmark> bookmarks = new ArrayList<>();
         try{
             FileReader fileReader = new FileReader(fileName);
-            
-        }catch(IOException e){
+            org.json.simple.parser.JSONParser parser = new org.json.simple.parser.JSONParser();
+            JSONArray jsonArray = (JSONArray) parser.parse(fileReader);
+            for(Object o : jsonArray){
+                JSONObject obj = (JSONObject) o;
+                Bookmark b = new Bookmark((String)obj.get("address"),(String)obj.get("name"));
+                bookmarks.add(b);
+            }
+
+        }catch(IOException | ParseException e){
             e.printStackTrace();
         }
 
-        return new ArrayList<>();
+        return bookmarks;
     }
 
     public void saveBookmarks(ArrayList<Bookmark> bookmarks){

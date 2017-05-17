@@ -50,6 +50,8 @@ class Window extends JFrame {
 		setVisible(true);
 		setSize(800,800);
 
+		bookmarks = fileManager.loadBookMarks("bookmarks.json");
+		
 		JPanel navigator = new JPanel();
 		BoxLayout navigatorLayout = new BoxLayout(navigator,BoxLayout.X_AXIS);
 		navigator.setLayout(navigatorLayout);
