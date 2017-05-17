@@ -7,10 +7,7 @@ import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.print.Book;
 import java.io.*;
 import java.net.URL;
@@ -51,7 +48,15 @@ class Window extends JFrame {
 		setSize(800,800);
 
 		bookmarks = fileManager.loadBookMarks("bookmarks.json");
-		
+
+		// saves bookmarks before exiting
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent windowEvent) {
+				fileManager.saveBookmarks(bookmarks);
+			}
+		});
+
 		JPanel navigator = new JPanel();
 		BoxLayout navigatorLayout = new BoxLayout(navigator,BoxLayout.X_AXIS);
 		navigator.setLayout(navigatorLayout);
@@ -110,7 +115,6 @@ class Window extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				// toggle edit mode
-				//fileManager.saveBookmarks(bookmarks);
 				if(canEditBookmarks){
 					canEditBookmarks = false;
 				}else{
