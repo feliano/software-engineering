@@ -7,10 +7,6 @@ public class Bookmark {
     private String address = "";
     private String name = "";
 
-    Bookmark(String address){
-        this.address = address;
-    }
-
     Bookmark(String address, String name){
         this.address = address;
         this.name = name;

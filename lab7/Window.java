@@ -62,6 +62,11 @@ class Window extends JFrame {
 			}
 		});
 
+		initGUI();
+
+	}
+
+	private void initGUI(){
 		JPanel navigator = new JPanel();
 		BoxLayout navigatorLayout = new BoxLayout(navigator,BoxLayout.X_AXIS);
 		navigator.setLayout(navigatorLayout);
@@ -86,8 +91,8 @@ class Window extends JFrame {
 				new Thread(new DataLoader(1)).start();
 			}
 		});
-		backButton.setPreferredSize(new Dimension(30,30));
-		forwardButton.setPreferredSize(new Dimension(30,30));
+		backButton.setPreferredSize(new Dimension(40,40));
+		forwardButton.setPreferredSize(new Dimension(40,40));
 
 		navigator.add(Box.createRigidArea(new Dimension(5,0))); // padding
 		navigator.add(backButton);
@@ -158,11 +163,11 @@ class Window extends JFrame {
 		JScrollPane readerScrollPane = new JScrollPane(webReader);
 		getContentPane().add(readerScrollPane,BorderLayout.CENTER);
 		webReader.addHyperlinkListener(hyperlinkEvent -> {
-            if(hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED){
-                    addressField.setText(hyperlinkEvent.getURL().toString());
-                    new Thread(new DataLoader(0)).start();
-                }
-            });
+			if(hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED){
+				addressField.setText(hyperlinkEvent.getURL().toString());
+				new Thread(new DataLoader(0)).start();
+			}
+		});
 
 		linksTable = new JTable(TABLE_MAX_ROWS,TABLE_NUM_COLUMNS);
 
@@ -183,28 +188,27 @@ class Window extends JFrame {
 
 		linksTable.setAutoCreateRowSorter(true); // allows sorting of the rows in the table
 		linksTable.addMouseListener(new MouseAdapter() {
-					@Override
-					public void mousePressed(MouseEvent mouseEvent) {
-						if (mouseEvent.getClickCount() == 2) {
-							int row = linksTable.rowAtPoint(mouseEvent.getPoint());
-							int col = linksTable.columnAtPoint(mouseEvent.getPoint());
-							if(canEditBookmarks){
-								// edit the bookmarks
-								int index = linksTable.convertRowIndexToModel(row);
-								new BookmarkDialog().editExistingBookmark(index);
-							}else{
-								if (col == 0) {
-									String address = (String) linksTable.getValueAt(row, col);
-									addressField.setText(address);
-									new Thread(new DataLoader(0)).start();
-									canEditBookmarks = false;
-									displayBookmarks = false;
-									updateButtonStates();
-								}
-							}
+			@Override
+			public void mousePressed(MouseEvent mouseEvent) {
+				if (mouseEvent.getClickCount() == 2) {
+					int row = linksTable.rowAtPoint(mouseEvent.getPoint());
+					int col = linksTable.columnAtPoint(mouseEvent.getPoint());
+					if(canEditBookmarks){
+						// edit the bookmarks
+						int index = linksTable.convertRowIndexToModel(row);
+						new BookmarkDialog().editExistingBookmark(index);
+					}else{
+						if (col == 0) {
+							String address = (String) linksTable.getValueAt(row, col);
+							addressField.setText(address);
+							new Thread(new DataLoader(0)).start();
+							canEditBookmarks = false;
+							displayBookmarks = false;
 						}
 					}
-				});
+				}
+			}
+		});
 		linksTable.setModel(defaultTableModel);
 
 		JPanel tableView = new JPanel();
@@ -358,16 +362,15 @@ class Window extends JFrame {
 				}else{
 					throw(new IllegalArgumentException("Expected range for argument 0-2, was: " + mode));
 				}
-				updateUI(addressField.getText());
 				// hide bookmarks
-				editBookmarksButton.setVisible(false);
-				showBookmarksButton.setBackground(null);
+				canEditBookmarks = false;
+				displayBookmarks = false;
+				updateUI(addressField.getText());
 			}catch (IOException | BadLocationException e) {
 				displayError("Couldn't open page: " + e.getMessage());
 			}
 		}
 	}
-
 
 	private class BookmarkDialog{
 

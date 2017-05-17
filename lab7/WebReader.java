@@ -35,7 +35,6 @@ class WebReader extends JEditorPane{
         setPage(new URL(address));
         earlierAdresses.push(currentAddress);
         currentAddress = address;
-
     }
 
     boolean earlierAdressesExists(){
