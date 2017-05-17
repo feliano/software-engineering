@@ -40,7 +40,6 @@ public class FileManager {
     public void saveBookmarks(ArrayList<Bookmark> bookmarks){
 
         JSONArray jsonArray = new JSONArray();
-        System.out.println("b size: " + bookmarks.size());
         for(Bookmark b : bookmarks){
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("address",b.getAddress());

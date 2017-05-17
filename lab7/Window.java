@@ -315,10 +315,7 @@ class Window extends JFrame {
 			defaultTableModel.setRowCount(0);
 
 			// update JTable
-			//int numLinks = (links.size() > TABLE_MAX_ROWS ? TABLE_MAX_ROWS : links.size()); // limit num of links
 			int numLinks = bookmarks.size();
-			System.out.print(bookmarks.size());
-			//linksTable.getColumn("").setCellRenderer(new JTableButtonRenderer);
 			for (int i = 0; i < numLinks; i++) {
 				defaultTableModel.addRow(new Object[] { bookmarks.get(i).getAddress(), bookmarks.get(i).getName()});
 			}
@@ -327,7 +324,6 @@ class Window extends JFrame {
 		}
 		updateButtonStates();
 	}
-
 
 	private void displayError(String message){
 		JOptionPane.showMessageDialog (this, message, "Error", JOptionPane.ERROR_MESSAGE);

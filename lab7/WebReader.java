@@ -57,7 +57,7 @@ class WebReader extends JEditorPane{
         connection.setRequestMethod("GET");
         connection.connect();
         int responseCode = connection.getResponseCode();
-        if(responseCode != 200){
+        if(responseCode >= 400){
             throw new IOException("code: " + responseCode);
         }
 
