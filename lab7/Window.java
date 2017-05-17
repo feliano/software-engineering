@@ -32,8 +32,13 @@ class Window extends JFrame {
 	private JButton forwardButton;
 	private JButton addBookmarkButton;
 	private JButton showBookmarksButton;
+	private JButton editBookmarksButton;
 
 	private boolean displayBookmarks = false;
+	private boolean canEditBookmarks = false;
+
+	private String[] header = {"Web Adress","About",""};
+
 
 	public Window(){
 		setTitle("Browser");
@@ -50,6 +55,7 @@ class Window extends JFrame {
 		forwardButton = new JButton("->");
 		backButton.setEnabled(false);
 		forwardButton.setEnabled(false);
+
 		backButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -95,6 +101,23 @@ class Window extends JFrame {
 		navigator.add(addBookmarkButton);
 		navigator.add(Box.createRigidArea(new Dimension(5,0)));
 
+		editBookmarksButton = new JButton("E");
+		editBookmarksButton.setVisible(false);
+		editBookmarksButton.setPreferredSize(new Dimension(50,30));
+		editBookmarksButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				// toggle edit mode
+				if(canEditBookmarks == false){
+					canEditBookmarks = true;
+				}else{
+					canEditBookmarks = false;
+				}
+			}
+		});
+		navigator.add(editBookmarksButton);
+		navigator.add(Box.createRigidArea(new Dimension(5,0)));
+
 		showBookmarksButton = new JButton("*");
 		showBookmarksButton.setEnabled(true);
 		showBookmarksButton.setPreferredSize(new Dimension(50,30));
@@ -111,6 +134,7 @@ class Window extends JFrame {
 		navigator.add(showBookmarksButton);
 		navigator.add(Box.createRigidArea(new Dimension(5,0)));
 
+
 		getContentPane().add(navigator,BorderLayout.NORTH);
 
 		webReader = new WebReader();
@@ -123,15 +147,22 @@ class Window extends JFrame {
                 }
             });
 
+
+
 		linksTable = new JTable(TABLE_MAX_ROWS,TABLE_NUM_COLUMNS);
 
-		String[] header = {"Web Adress","About"};
 		DefaultTableModel defaultTableModel = new DefaultTableModel(new String[][]{},header) {
 			@Override
 			public boolean isCellEditable(int i, int i1) {
 				return false;
 			}
+
+			@Override
+			public String getColumnName(int index){
+				return header[index];
+			}
 		};
+
 		defaultTableModel.setRowCount(TABLE_MAX_ROWS);
 		defaultTableModel.setColumnCount(TABLE_NUM_COLUMNS);
 
@@ -142,19 +173,26 @@ class Window extends JFrame {
 					@Override
 					public void mousePressed(MouseEvent mouseEvent) {
 						if (mouseEvent.getClickCount() == 2) {
-							int row = linksTable.rowAtPoint(mouseEvent.getPoint());
-							int col = linksTable.columnAtPoint(mouseEvent.getPoint());
-							if (col == 0) {
-								String address = (String) linksTable.getValueAt(row, col);
-								addressField.setText(address);
-								new Thread(new DataLoader(0)).start();
-								showBookmarksButton.setBackground(null);
-								displayBookmarks = false;
+							if(canEditBookmarks){
+								// edit the bookmarks
+							}else{
+
+								int row = linksTable.rowAtPoint(mouseEvent.getPoint());
+								int col = linksTable.columnAtPoint(mouseEvent.getPoint());
+								if (col == 0) {
+									String address = (String) linksTable.getValueAt(row, col);
+									addressField.setText(address);
+									new Thread(new DataLoader(0)).start();
+									showBookmarksButton.setBackground(null);
+									editBookmarksButton.setVisible(false);
+									displayBookmarks = false;
+								}
 							}
 						}
 					}
 				});
 		linksTable.setModel(defaultTableModel);
+
 		JScrollPane linksScrollPane = new JScrollPane(linksTable);
 		getContentPane().add(linksScrollPane,BorderLayout.EAST);
 		pack();
@@ -222,9 +260,11 @@ class Window extends JFrame {
 		displayBookmarks = showBookmarks;
 		if(!showBookmarks){
 			// hide, show links instead
+			editBookmarksButton.setVisible(false);
 			showBookmarksButton.setBackground(null);
 			DefaultTableModel defaultTableModel = (DefaultTableModel) linksTable.getModel();
 			defaultTableModel.setRowCount(0);
+			defaultTableModel.setColumnCount(2);
 			// update JTable
 			int numLinks = (links.size() > TABLE_MAX_ROWS ? TABLE_MAX_ROWS : links.size()); // limit num of links
 			for (int i = 0; i < numLinks; i++) {
@@ -234,15 +274,19 @@ class Window extends JFrame {
 			linksTable.setModel(defaultTableModel);
 		}else{
 			//show
+			editBookmarksButton.setVisible(true);
 			showBookmarksButton.setBackground(Color.GRAY);
 			DefaultTableModel defaultTableModel = (DefaultTableModel) linksTable.getModel();
 			defaultTableModel.setRowCount(0);
+			defaultTableModel.setColumnCount(3);
+
 			// update JTable
 			//int numLinks = (links.size() > TABLE_MAX_ROWS ? TABLE_MAX_ROWS : links.size()); // limit num of links
 			int numLinks = bookmarks.size();
 			System.out.print(bookmarks.size());
+			//linksTable.getColumn("").setCellRenderer(new JTableButtonRenderer);
 			for (int i = 0; i < numLinks; i++) {
-				defaultTableModel.addRow(new Object[] { bookmarks.get(i).getAddress(), bookmarks.get(i).getName()});
+				defaultTableModel.addRow(new Object[] { bookmarks.get(i).getAddress(), bookmarks.get(i).getName(),new JButton("edit")});
 			}
 			defaultTableModel.setRowCount(bookmarks.size()); // this updates UI
 			linksTable.setModel(defaultTableModel);
@@ -285,6 +329,9 @@ class Window extends JFrame {
 					throw(new IllegalArgumentException("Expected range for argument 0-2, was: " + mode));
 				}
 				updateUI(addressField.getText());
+				// hide bookmarks
+				editBookmarksButton.setVisible(false);
+				showBookmarksButton.setBackground(null);
 			}catch (IOException | BadLocationException e) {
 				displayError("Couldn't open page: " + e.getMessage());
 			}
