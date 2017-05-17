@@ -1,10 +1,6 @@
-import jdk.nashorn.internal.parser.JSONParser;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
-
-import java.awt.print.Book;
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -24,7 +20,6 @@ public class FileManager {
         return fileManager;
     }
 
-
     public ArrayList<Bookmark> loadBookMarks(String fileName){
         ArrayList<Bookmark> bookmarks = new ArrayList<>();
         try{
@@ -36,11 +31,9 @@ public class FileManager {
                 Bookmark b = new Bookmark((String)obj.get("address"),(String)obj.get("name"));
                 bookmarks.add(b);
             }
-
         }catch(IOException | ParseException e){
             e.printStackTrace();
         }
-
         return bookmarks;
     }
 

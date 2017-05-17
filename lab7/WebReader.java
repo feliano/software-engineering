@@ -6,6 +6,10 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import javax.swing.*;
 
+/**
+ * Class handling and displaying content of a web page
+ */
+
 class WebReader extends JEditorPane{
 
     private Deque<String> laterAdresses = new ArrayDeque();

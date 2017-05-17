@@ -13,6 +13,10 @@ import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 
+/**
+ * Web browser main window class
+ */
+
 class Window extends JFrame {
 
 	private final static int TABLE_MAX_ROWS = 50;
@@ -35,6 +39,7 @@ class Window extends JFrame {
 	private JButton showBookmarksButton;
 	private JButton editBookmarksButton;
 
+	private JLabel tableLabel;
 	private boolean displayBookmarks = false;
 	private boolean canEditBookmarks = false;
 
@@ -49,7 +54,7 @@ class Window extends JFrame {
 
 		bookmarks = fileManager.loadBookMarks("bookmarks.json");
 
-		// saves bookmarks before exiting
+		// saves bookmarks on exit
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent windowEvent) {
@@ -101,14 +106,13 @@ class Window extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				// Add bookmark
-				//Bookmark bookmark = new Bookmark(addressField.getText());
-				new BookmarkDialog(true).show(); // TODO: remove show() method from dialog class
+				new BookmarkDialog().addNewBookmark();
 			}
 		});
 		navigator.add(addBookmarkButton);
 		navigator.add(Box.createRigidArea(new Dimension(5,0)));
 
-		editBookmarksButton = new JButton("E");
+		editBookmarksButton = new JButton("~");
 		editBookmarksButton.setVisible(false);
 		editBookmarksButton.setPreferredSize(new Dimension(50,30));
 		editBookmarksButton.addActionListener(new ActionListener() {
@@ -142,7 +146,6 @@ class Window extends JFrame {
 		navigator.add(showBookmarksButton);
 		navigator.add(Box.createRigidArea(new Dimension(5,0)));
 
-
 		getContentPane().add(navigator,BorderLayout.NORTH);
 
 		webReader = new WebReader();
@@ -154,8 +157,6 @@ class Window extends JFrame {
                     new Thread(new DataLoader(0)).start();
                 }
             });
-
-
 
 		linksTable = new JTable(TABLE_MAX_ROWS,TABLE_NUM_COLUMNS);
 
@@ -184,7 +185,7 @@ class Window extends JFrame {
 							if(canEditBookmarks){
 								// edit the bookmarks
 								int index = linksTable.convertRowIndexToModel(row);
-								new BookmarkDialog(false).editExistingBookmark(index);
+								new BookmarkDialog().editExistingBookmark(index);
 							}else{
 								if (col == 0) {
 									String address = (String) linksTable.getValueAt(row, col);
@@ -200,8 +201,16 @@ class Window extends JFrame {
 				});
 		linksTable.setModel(defaultTableModel);
 
+		JPanel tableView = new JPanel();
+		BoxLayout tableViewLayout = new BoxLayout(tableView,BoxLayout.Y_AXIS);
+		tableView.setLayout(tableViewLayout);
 		JScrollPane linksScrollPane = new JScrollPane(linksTable);
-		getContentPane().add(linksScrollPane,BorderLayout.EAST);
+		tableLabel = new JLabel("Site Links");
+		tableLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+		tableView.add(tableLabel);
+		tableView.add(linksScrollPane);
+
+		getContentPane().add(tableView,BorderLayout.EAST);
 		pack();
 	}
 
@@ -280,12 +289,8 @@ class Window extends JFrame {
 	private void toggleBookmarks(boolean showBookmarks){
 		displayBookmarks = showBookmarks;
 		if(!showBookmarks){
+			tableLabel.setText("Site Links");
 			// hide, show links instead
-			/*
-			editBookmarksButton.setVisible(false);
-			editBookmarksButton.setBackground(null);
-			showBookmarksButton.setBackground(null);
-			*/
 			canEditBookmarks = false;
 			DefaultTableModel defaultTableModel = (DefaultTableModel) linksTable.getModel();
 			defaultTableModel.setRowCount(0);
@@ -297,10 +302,9 @@ class Window extends JFrame {
 			defaultTableModel.setRowCount(TABLE_MAX_ROWS); // this updates UI
 			linksTable.setModel(defaultTableModel);
 		}else{
-			//show
-			//editBookmarksButton.setVisible(true);
+			tableLabel.setText("Bookmarks");
+			//show bookmarks
 			canEditBookmarks = false;
-			//showBookmarksButton.setBackground(Color.GRAY);
 			DefaultTableModel defaultTableModel = (DefaultTableModel) linksTable.getModel();
 			defaultTableModel.setRowCount(0);
 
@@ -367,25 +371,8 @@ class Window extends JFrame {
 
 		JTextField dialogAddressField = new JTextField(addressField.getText());
 		JTextField dialogNameField = new JTextField();
-		boolean isAddNewBookmark = true;
-		int bookmarkIndex = -1;
 
-		BookmarkDialog(boolean isAddNewBookmark){
-			this.isAddNewBookmark = isAddNewBookmark;
-		}
-
-		BookmarkDialog(boolean isAddNewBookmark,int bookmarkIndex){
-			this.isAddNewBookmark = isAddNewBookmark;
-			this.bookmarkIndex = bookmarkIndex;
-		}
-
-		void show() {
-			if(isAddNewBookmark){
-				addNewBookmark();
-			}else{
-				editExistingBookmark(-1);
-			}
-		}
+		BookmarkDialog(){}
 
 		private void addNewBookmark(){
 
@@ -410,7 +397,6 @@ class Window extends JFrame {
 
 		}
 
-		// TODO: pass index of bookmark as parameter
 		private void editExistingBookmark(int index) {
 
 			Bookmark oldBookmark = bookmarks.get(index);
