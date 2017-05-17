@@ -22,6 +22,8 @@ class Window extends JFrame {
 	private final static int TABLE_NUM_COLUMNS = 2;
 	private final static Color ACTIVATED_COLOR = Color.GRAY;
 
+	private FileManager fileManager = FileManager.getInstance();
+
 	private JTextField addressField;
 	private WebReader webReader;
 	private JTable linksTable;
@@ -106,6 +108,7 @@ class Window extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				// toggle edit mode
+				//fileManager.saveBookmarks(bookmarks);
 				if(canEditBookmarks){
 					canEditBookmarks = false;
 				}else{
