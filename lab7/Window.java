@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.print.Book;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ class Window extends JFrame {
 
 	private final static int TABLE_MAX_ROWS = 50;
 	private final static int TABLE_NUM_COLUMNS = 2;
+	private final static Color ACTIVATED_COLOR = Color.GRAY;
 
 	private JTextField addressField;
 	private WebReader webReader;
@@ -37,8 +39,7 @@ class Window extends JFrame {
 	private boolean displayBookmarks = false;
 	private boolean canEditBookmarks = false;
 
-	private String[] header = {"Web Adress","About",""};
-
+	private String[] header = {"Web Adress","Name"};
 
 	public Window(){
 		setTitle("Browser");
@@ -92,10 +93,7 @@ class Window extends JFrame {
 			public void actionPerformed(ActionEvent actionEvent) {
 				// Add bookmark
 				//Bookmark bookmark = new Bookmark(addressField.getText());
-				new BookmarkDialog(true).show();
-				if(displayBookmarks){
-					toggleBookmarks(true);
-				}
+				new BookmarkDialog(true).show(); // TODO: remove show() method from dialog class
 			}
 		});
 		navigator.add(addBookmarkButton);
@@ -108,11 +106,12 @@ class Window extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				// toggle edit mode
-				if(canEditBookmarks == false){
-					canEditBookmarks = true;
-				}else{
+				if(canEditBookmarks){
 					canEditBookmarks = false;
+				}else{
+					canEditBookmarks = true;
 				}
+				updateButtonStates();
 			}
 		});
 		navigator.add(editBookmarksButton);
@@ -124,7 +123,7 @@ class Window extends JFrame {
 		showBookmarksButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				if(displayBookmarks == true){
+				if(displayBookmarks){
 					toggleBookmarks(false);
 				}else{
 					toggleBookmarks(true);
@@ -166,26 +165,25 @@ class Window extends JFrame {
 		defaultTableModel.setRowCount(TABLE_MAX_ROWS);
 		defaultTableModel.setColumnCount(TABLE_NUM_COLUMNS);
 
-		// sorts the bookmarks
-		linksTable.setAutoCreateRowSorter(true);
-
+		linksTable.setAutoCreateRowSorter(true); // allows sorting of the rows in the table
 		linksTable.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mousePressed(MouseEvent mouseEvent) {
 						if (mouseEvent.getClickCount() == 2) {
+							int row = linksTable.rowAtPoint(mouseEvent.getPoint());
+							int col = linksTable.columnAtPoint(mouseEvent.getPoint());
 							if(canEditBookmarks){
 								// edit the bookmarks
+								int index = linksTable.convertRowIndexToModel(row);
+								new BookmarkDialog(false).editExistingBookmark(index);
 							}else{
-
-								int row = linksTable.rowAtPoint(mouseEvent.getPoint());
-								int col = linksTable.columnAtPoint(mouseEvent.getPoint());
 								if (col == 0) {
 									String address = (String) linksTable.getValueAt(row, col);
 									addressField.setText(address);
 									new Thread(new DataLoader(0)).start();
-									showBookmarksButton.setBackground(null);
-									editBookmarksButton.setVisible(false);
+									canEditBookmarks = false;
 									displayBookmarks = false;
+									updateButtonStates();
 								}
 							}
 						}
@@ -210,6 +208,20 @@ class Window extends JFrame {
 			forwardButton.setEnabled(true);
 		}else{
 			forwardButton.setEnabled(false);
+		}
+
+		if(displayBookmarks){
+			showBookmarksButton.setBackground(ACTIVATED_COLOR);
+			editBookmarksButton.setVisible(true);
+		}else{
+			showBookmarksButton.setBackground(null);
+			editBookmarksButton.setVisible(false);
+		}
+
+		if(canEditBookmarks){
+			editBookmarksButton.setBackground(ACTIVATED_COLOR);
+		}else{
+			editBookmarksButton.setBackground(null);
 		}
 	}
 
@@ -260,11 +272,14 @@ class Window extends JFrame {
 		displayBookmarks = showBookmarks;
 		if(!showBookmarks){
 			// hide, show links instead
+			/*
 			editBookmarksButton.setVisible(false);
+			editBookmarksButton.setBackground(null);
 			showBookmarksButton.setBackground(null);
+			*/
+			canEditBookmarks = false;
 			DefaultTableModel defaultTableModel = (DefaultTableModel) linksTable.getModel();
 			defaultTableModel.setRowCount(0);
-			defaultTableModel.setColumnCount(2);
 			// update JTable
 			int numLinks = (links.size() > TABLE_MAX_ROWS ? TABLE_MAX_ROWS : links.size()); // limit num of links
 			for (int i = 0; i < numLinks; i++) {
@@ -274,11 +289,11 @@ class Window extends JFrame {
 			linksTable.setModel(defaultTableModel);
 		}else{
 			//show
-			editBookmarksButton.setVisible(true);
-			showBookmarksButton.setBackground(Color.GRAY);
+			//editBookmarksButton.setVisible(true);
+			canEditBookmarks = false;
+			//showBookmarksButton.setBackground(Color.GRAY);
 			DefaultTableModel defaultTableModel = (DefaultTableModel) linksTable.getModel();
 			defaultTableModel.setRowCount(0);
-			defaultTableModel.setColumnCount(3);
 
 			// update JTable
 			//int numLinks = (links.size() > TABLE_MAX_ROWS ? TABLE_MAX_ROWS : links.size()); // limit num of links
@@ -286,12 +301,12 @@ class Window extends JFrame {
 			System.out.print(bookmarks.size());
 			//linksTable.getColumn("").setCellRenderer(new JTableButtonRenderer);
 			for (int i = 0; i < numLinks; i++) {
-				defaultTableModel.addRow(new Object[] { bookmarks.get(i).getAddress(), bookmarks.get(i).getName(),new JButton("edit")});
+				defaultTableModel.addRow(new Object[] { bookmarks.get(i).getAddress(), bookmarks.get(i).getName()});
 			}
 			defaultTableModel.setRowCount(bookmarks.size()); // this updates UI
 			linksTable.setModel(defaultTableModel);
 		}
-
+		updateButtonStates();
 	}
 
 
@@ -359,11 +374,11 @@ class Window extends JFrame {
 			if(isAddNewBookmark){
 				addNewBookmark();
 			}else{
-				editExistingBookmark();
+				editExistingBookmark(-1);
 			}
 		}
 
-		void addNewBookmark(){
+		private void addNewBookmark(){
 
 			Object[] options = {"Save",
 					"Cancel"};
@@ -378,27 +393,45 @@ class Window extends JFrame {
 				// create new bookmark
 				bookmarks.add(new Bookmark(dialogAddressField.getText(),dialogNameField.getText()));
 			}
-			System.out.println(selection);
+
+			// update table
+			if(displayBookmarks){
+				toggleBookmarks(true);
+			}
+
 		}
 
 		// TODO: pass index of bookmark as parameter
-		void editExistingBookmark() {
+		private void editExistingBookmark(int index) {
+
+			Bookmark oldBookmark = bookmarks.get(index);
 
 			Object[] options = {"Save",
 					"Delete","Cancel",};
 
 			JPanel panel = new JPanel(new GridLayout(0,1));
 			panel.add(new JLabel("Address"));
+			dialogAddressField.setText(oldBookmark.getAddress());
 			panel.add(dialogAddressField);
 			panel.add(new JLabel("Name"));
+			dialogNameField.setText(oldBookmark.getName());
 			panel.add(dialogNameField);
-			int selection = JOptionPane.showOptionDialog(null,panel,"new bookmark",JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,options,null);
+			int selection = JOptionPane.showOptionDialog(null,panel,"Edit Bookmark",JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,null,options,null);
 
 			if(selection == 0){
 				// Update bookmark, save changes
+				bookmarks.remove(index);
+				bookmarks.add(index,new Bookmark(dialogAddressField.getText(),dialogNameField.getText()));
 			}else if(selection == 1){
 				// delete bookmark
+				bookmarks.remove(index);
 			}
+
+			// update table
+			if(displayBookmarks){
+				toggleBookmarks(true);
+			}
+
 		}
 	}
 
