@@ -1,6 +1,6 @@
+// Fredrik Eliasson
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import javax.swing.table.*;
 import javax.swing.text.*;
 import javax.swing.text.html.HTML;
@@ -31,7 +31,7 @@ class Window extends JFrame {
 		setVisible(true);
 		setSize(800,800);
 
-		addressField = new JTextField("http://www.nada.kth.se/~henrik");
+		addressField = new JTextField("http://www.nada.kth.se/~gerd");
 		addressField.addActionListener(event -> {
 			new Thread(new DataLoader()).start();
 		});
@@ -81,7 +81,7 @@ class Window extends JFrame {
 
 	private void updateLinks(String address) throws IOException, BadLocationException {
 		InputStream in = new URL(address).openConnection().getInputStream();
-		InputStreamReader reader = new InputStreamReader(in,"iso-8859-1");
+		InputStreamReader reader = new InputStreamReader(in,"iso-8859-1"); // have to spec char encoding for links to be loaded nicely
 
 		links.clear();
 		titles.clear();
