@@ -99,7 +99,7 @@ class Window extends JFrame {
 		navigator.add(forwardButton);
 		navigator.add(Box.createRigidArea(new Dimension(5,0)));
 
-		addressField = new JTextField("http://www.nada.kth.se/~henrik");
+		addressField = new JTextField("http://www.nada.kth.se/~gerd");
 		addressField.addActionListener(event -> {
 			new Thread(new DataLoader(0)).start();
 		});
@@ -251,6 +251,13 @@ class Window extends JFrame {
 		}else{
 			editBookmarksButton.setBackground(null);
 		}
+
+		if(displayBookmarks){
+			tableLabel.setText("Bookmarks");
+		}else{
+			tableLabel.setText("Site Links");
+		}
+
 	}
 
 	private void updateLinks(String address) throws IOException, BadLocationException {
@@ -299,8 +306,8 @@ class Window extends JFrame {
 	private void toggleBookmarks(boolean showBookmarks){
 		displayBookmarks = showBookmarks;
 		if(!showBookmarks){
-			tableLabel.setText("Site Links");
 			// hide, show links instead
+			linksTable.setRowSorter(null);
 			canEditBookmarks = false;
 			DefaultTableModel defaultTableModel = (DefaultTableModel) linksTable.getModel();
 			defaultTableModel.setRowCount(0);
@@ -312,8 +319,8 @@ class Window extends JFrame {
 			defaultTableModel.setRowCount(TABLE_MAX_ROWS); // this updates UI
 			linksTable.setModel(defaultTableModel);
 		}else{
-			tableLabel.setText("Bookmarks");
 			//show bookmarks
+			linksTable.setAutoCreateRowSorter(true);
 			canEditBookmarks = false;
 			DefaultTableModel defaultTableModel = (DefaultTableModel) linksTable.getModel();
 			defaultTableModel.setRowCount(0);
@@ -365,6 +372,7 @@ class Window extends JFrame {
 				// hide bookmarks
 				canEditBookmarks = false;
 				displayBookmarks = false;
+				linksTable.setRowSorter(null);
 				updateUI(addressField.getText());
 			}catch (IOException | BadLocationException e) {
 				displayError("Couldn't open page: " + e.getMessage());

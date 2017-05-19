@@ -18,6 +18,7 @@ class WebReader extends JEditorPane{
 
     WebReader(){
         setContentType("text/html");
+        getDocument().putProperty("IgnoreCharsetDirective",true);
         setPreferredSize(new Dimension(300,600));
         setVisible(true);
         setEditable(false);
